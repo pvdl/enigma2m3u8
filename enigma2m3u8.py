@@ -4,10 +4,20 @@ import os
 import re
 import shutil
 import sys
+import argparse
+
+# construct the argument parse and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-f", "--file", required=True,
+   help="input name of the enigma2 zip file")
+ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv", help="include tv stations in output", default=False)
+ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio", help="include radio stations in output", default=False)
+ap.add_argument('--version', action='version', version='%(prog)s 20191007')
+args = vars(ap.parse_args())
 
 # Set global parameters
 temp_directory = 'outdir'
-zip_file = 'e2_hanssettings_kabelNL.zip'
+zip_file = format(args["file"])
 
 def get_name(filedata):
    name = re.findall("^#NAME (.*)", filedata)
@@ -45,8 +55,15 @@ if not os.path.exists(temp_directory):
 basepath = temp_directory + '/e2_hanssettings_kabelNL/'
 stream_files = os.listdir(basepath)
 bouquets_tv = open(basepath + 'bouquets.tv','rb')
-filedata = bouquets_tv.readlines()
-newlist = list()
+bouquets_radio = open(basepath + 'bouquets.radio','rb')
+
+filedata = []
+if args["boolean_tv"] == True:
+   filedata += bouquets_tv.readlines()
+if args["boolean_radio"] == True:
+   filedata += bouquets_radio.readlines()
+
+newlist = [] 
 for line in filedata:
    pattern = "\"(.*)\""
    match = re.search(pattern, line)
@@ -81,7 +98,7 @@ for entry in newlist:
             result = re.search("#DESCRIPTION (.*)",filedata[index + 1].strip())
             result = remove_separators(result.group(1))
             print("#EXTINF:-1 group-title=\"" + bouquet_name +"\"," + result)
-            print("null")
+            print("127.0.0.1")
          index += 1
       bouquet_file.close()
 # Remove the temporay folder 'outdir'
