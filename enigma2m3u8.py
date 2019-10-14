@@ -12,7 +12,7 @@ ap.add_argument("-f", "--file", required=True,
    help="input name of the enigma2 zip file")
 ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv", help="include tv stations in output", default=False)
 ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio", help="include radio stations in output", default=False)
-ap.add_argument('--version', action='version', version='%(prog)s 20191007')
+ap.add_argument('--version', action='version', version='%(prog)s 20191014')
 args = vars(ap.parse_args())
 
 # Set global parameters
@@ -36,7 +36,11 @@ def url_decoding(encoded_url):
    # Sometimes an URL is ended with a newline. Remove it.
    result = re.sub('%0d', '', result)
    return result
-   
+
+# Create temporary folder
+if not os.path.exists(temp_directory):
+   os.mkdir(temp_directory)
+
 # Extract ZIP file
 try:
    fh = open(zip_file,'rb')
@@ -47,12 +51,10 @@ zfile = zipfile.ZipFile(fh)
 zfile.extractall(temp_directory)
 fh.close()
 
-# Create temporary folder
-if not os.path.exists(temp_directory):
-   os.mkdir(temp_directory)
-       
 # Determine the bouquet list order
-basepath = temp_directory + '/e2_hanssettings_kabelNL/'
+os.walk(temp_directory)
+sub_directory = next(os.walk(temp_directory))[1][0]
+basepath = temp_directory + '/' + sub_directory + '/'
 stream_files = os.listdir(basepath)
 bouquets_tv = open(basepath + 'bouquets.tv','rb')
 bouquets_radio = open(basepath + 'bouquets.radio','rb')
@@ -60,10 +62,12 @@ bouquets_radio = open(basepath + 'bouquets.radio','rb')
 filedata = []
 if args["boolean_tv"] == True:
    filedata += bouquets_tv.readlines()
+   bouquets_tv.close()
 if args["boolean_radio"] == True:
    filedata += bouquets_radio.readlines()
+   bouquets_radio.close()
 
-newlist = [] 
+newlist = []
 for line in filedata:
    pattern = "\"(.*)\""
    match = re.search(pattern, line)
@@ -71,13 +75,12 @@ for line in filedata:
       result = match.group()
       result = result.strip('\"')
       newlist.append(result)
-bouquets_tv.close()
 
 # Generate the m3u8 file
 print("#EXTM3U")
 for entry in newlist:
    if os.path.isfile(os.path.join(basepath, entry)) and re.search("stream",entry):
-      bouquet_file = open(basepath + entry,"r") 
+      bouquet_file = open(basepath + entry,"r")
       filedata = bouquet_file.readlines()
       bouquet_name = get_name(filedata[0])
       index = 0
