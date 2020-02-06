@@ -2,7 +2,7 @@
 Enigma2 to m3u8 converter
 
 ```
-usage: enigma2m3u8.py [-h] -f FILE [-t] [-r] [--version]
+usage: enigma2m3u8.py [-h] -f FILE [-t] [-r] [-c] [--version]
 
 optional arguments:
   -h, --help            show this help message and exit
