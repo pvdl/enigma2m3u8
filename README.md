@@ -9,5 +9,6 @@ optional arguments:
   -f FILE, --file FILE  input name of the enigma2 zip file
   -t, --tv              include tv stations in output
   -r, --radio           include radio stations in output
+  -c, --choice          choose bouquets for output
   --version             show program's version number and exit
 ```
