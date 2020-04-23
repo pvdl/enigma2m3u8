@@ -10,8 +10,8 @@ import argparse
 ap = argparse.ArgumentParser()
 ap.add_argument("-f", "--file", required=True,
     help="input name of the enigma2 zip file")
-ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv", help="include tv stations in output", default=False)
-ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio", help="include radio stations in output", default=False)
+ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv", help="only tv stations in output", default=False)
+ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio", help="only radio stations in output", default=False)
 ap.add_argument('-c', "--choice", action='store_true', dest="boolean_choice", help="choose bouquets for output", default=False)
 ap.add_argument('--version', action='version', version='%(prog)s 20200206')
 args = vars(ap.parse_args())
