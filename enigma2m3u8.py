@@ -104,6 +104,11 @@ if args["boolean_tv"]:
 if args["boolean_radio"]:
     filedata += bouquets_radio.readlines()
     bouquets_radio.close()
+if not args["boolean_tv"] and not args["boolean_radio"]:
+    filedata += bouquets_tv.readlines()
+    bouquets_tv.close()
+    filedata += bouquets_radio.readlines()
+    bouquets_radio.close()
 
 newlist = []
 for line in filedata:
