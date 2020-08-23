@@ -8,8 +8,7 @@ import argparse
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-f", "--file", required=True,
-    help="input name of the enigma2 zip file")
+ap.add_argument("-f", "--file", required=True, help="input name of the enigma2 zip file")
 ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv", help="only tv stations in output", default=False)
 ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio", help="only radio stations in output", default=False)
 ap.add_argument('-c', "--choice", action='store_true', dest="boolean_choice", help="choose bouquets for output", default=False)
@@ -41,7 +40,6 @@ def url_decoding(encoded_url):
     result = re.sub('%0d', '', result)
     return result
 
-import sys
 
 def query_yes_no(question, default="no"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -74,6 +72,7 @@ def query_yes_no(question, default="no"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
 
 # Create temporary folder
 if not os.path.exists(temp_directory):
@@ -162,6 +161,6 @@ for entry in newlist:
 outfile.close()
 print ("File 'out.m3u8' generated!")
 
-# Remove the temporay folder 'outdir'
+# Remove the temporary folder 'outdir'
 if os.path.exists(temp_directory):
     shutil.rmtree(temp_directory)
