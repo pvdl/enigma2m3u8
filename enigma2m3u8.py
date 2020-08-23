@@ -8,20 +8,24 @@ import argparse
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-f", "--file", required=True, help="input name of the enigma2 zip file")
-ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv", help="only tv stations in output", default=False)
-ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio", help="only radio stations in output", default=False)
-ap.add_argument('-c', "--choice", action='store_true', dest="boolean_choice", help="choose bouquets for output", default=False)
+ap.add_argument("-f", "--file", required=True,
+                help="input name of the enigma2 zip file")
+ap.add_argument('-t', "--tv", action='store_true', dest="boolean_tv",
+                help="only tv stations in output", default=False)
+ap.add_argument('-r', "--radio", action='store_true', dest="boolean_radio",
+                help="only radio stations in output", default=False)
+ap.add_argument('-c', "--choice", action='store_true', dest="boolean_choice",
+                help="choose bouquets for output", default=False)
 ap.add_argument('--version', action='version', version='%(prog)s 20200206')
 args = vars(ap.parse_args())
 
 # Set global parameters
-temp_directory = 'outdir'
+temp_directory = 'out_dir'
 zip_file = format(args["file"])
 
 
-def get_name(filedata):
-    name = re.findall("^#NAME (.*)", filedata)
+def get_name(file_data):
+    name = re.findall("^#NAME (.*)", file_data)
     result = re.sub(',', '.', name[0])
     return result
 
@@ -91,43 +95,43 @@ fh.close()
 # Determine the bouquet list order
 os.walk(temp_directory)
 sub_directory = next(os.walk(temp_directory))[1][0]
-basepath = temp_directory + '/' + sub_directory + '/'
-stream_files = os.listdir(basepath)
-bouquets_tv = open(basepath + 'bouquets.tv', 'rb')
-bouquets_radio = open(basepath + 'bouquets.radio', 'rb')
+base_path = temp_directory + '/' + sub_directory + '/'
+stream_files = os.listdir(base_path)
+bouquets_tv = open(base_path + 'bouquets.tv', 'rb')
+bouquets_radio = open(base_path + 'bouquets.radio', 'rb')
 
-filedata = []
+file_data = []
 if args["boolean_tv"]:
-    filedata += bouquets_tv.readlines()
+    file_data += bouquets_tv.readlines()
     bouquets_tv.close()
 if args["boolean_radio"]:
-    filedata += bouquets_radio.readlines()
+    file_data += bouquets_radio.readlines()
     bouquets_radio.close()
 if not args["boolean_tv"] and not args["boolean_radio"]:
-    filedata += bouquets_tv.readlines()
+    file_data += bouquets_tv.readlines()
     bouquets_tv.close()
-    filedata += bouquets_radio.readlines()
+    file_data += bouquets_radio.readlines()
     bouquets_radio.close()
 
-newlist = []
-for line in filedata:
+new_list = []
+for line in file_data:
     pattern = "\"(.*)\""
     match = re.search(pattern, line)
     if match:
-        result = match.group()
-        result = result.strip('\"')
-        newlist.append(result)
+        search_result = match.group()
+        search_result = search_result.strip('\"')
+        new_list.append(search_result)
 
 # Generate the m3u8 file
 # Open new file
 outfile = open("out.m3u8", "w")
 outfile.write("#EXTM3U" + "\n")
 
-for entry in newlist:
-    if os.path.isfile(os.path.join(basepath, entry)) and re.search("stream", entry):
-        bouquet_file = open(basepath + entry, "r")
-        filedata = bouquet_file.readlines()
-        bouquet_name = get_name(filedata[0])
+for entry in new_list:
+    if os.path.isfile(os.path.join(base_path, entry)) and re.search("stream", entry):
+        bouquet_file = open(base_path + entry, "r")
+        file_data = bouquet_file.readlines()
+        bouquet_name = get_name(file_data[0])
         if args["boolean_choice"]:
             answer = query_yes_no("Add :" + bouquet_name)
         else:
@@ -136,24 +140,24 @@ for entry in newlist:
         if answer:
             outfile.write("#EXTINF:-1 group-title=\"" + bouquet_name + "\",++" + bouquet_name + "++" + "\n")
             outfile.write("null" + "\n")
-        for line in filedata:
+        for line in file_data:
             # Line is stream
             if re.search('#SERVICE 4097:0', line):
-                result = re.search("#DESCRIPTION (.*)", filedata[index + 1].strip())
-                result = remove_separators(result.group(1))
+                search_result = re.search("#DESCRIPTION (.*)", file_data[index + 1].strip())
+                search_result = remove_separators(search_result.group(1))
                 if answer:
-                    outfile.write("#EXTINF:-1 group-title=\"" + bouquet_name + "\"," + result + "\n")
+                    outfile.write("#EXTINF:-1 group-title=\"" + bouquet_name + "\"," + search_result + "\n")
                 # Strip the 'SERVICE' text and the newline
-                result = re.search("#SERVICE [0-9a-fA-F{1,}:]+(.*):", line.strip())
-                url = url_decoding(result.group(1))
+                search_result = re.search("#SERVICE [0-9a-fA-F{1,}:]+(.*):", line.strip())
+                url = url_decoding(search_result.group(1))
                 if answer:
                     outfile.write(url + "\n")
             # Line is placeholder
             if re.search('#SERVICE 1:64', line):
-                result = re.search("#DESCRIPTION (.*)", filedata[index + 1].strip())
-                result = remove_separators(result.group(1))
+                search_result = re.search("#DESCRIPTION (.*)", file_data[index + 1].strip())
+                search_result = remove_separators(search_result.group(1))
                 if answer:
-                    outfile.write("#EXTINF:-1 group-title=\"" + bouquet_name + "\"," + result + "\n")
+                    outfile.write("#EXTINF:-1 group-title=\"" + bouquet_name + "\"," + search_result + "\n")
                     outfile.write("127.0.0.1" + "\n")
             index += 1
         bouquet_file.close()
@@ -161,6 +165,6 @@ for entry in newlist:
 outfile.close()
 print ("File 'out.m3u8' generated!")
 
-# Remove the temporary folder 'outdir'
+# Remove the temporary folder 'out_dir'
 if os.path.exists(temp_directory):
     shutil.rmtree(temp_directory)
